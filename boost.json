@@ -1,0 +1,18 @@
+{
+    "agents": [
+        "codex"
+    ],
+    "cloud": true,
+    "packages": [
+        "livewire/blaze"
+    ],
+    "skills": [
+        "infer-conventions",
+        "laravel-best-practices",
+        "livewire-development",
+        "pest-testing",
+        "tailwindcss-development",
+        "blaze-optimize",
+        "deploying-laravel-cloud"
+    ]
+}
