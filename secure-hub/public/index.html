@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreatShield Mobile App (React Native)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @keyframes fillProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .animate-progress {
+            animation: fillProgress 5s linear forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Mobile Device Frame Container -->
+    <div class="w-[380px] h-[780px] bg-black rounded-[48px] p-3 shadow-2xl border-4 border-slate-700 relative overflow-hidden flex flex-col">
+        
+        <!-- Mobile Notch / Camera -->
+        <div class="absolute top-4 left-1/2 -translate-x-1/2 w-32 h-4 bg-black rounded-full z-50 flex items-center justify-center">
+            <div class="w-3 h-3 rounded-full bg-slate-800"></div>
+        </div>
+
+        <!-- React Native View Screen -->
+        <div class="w-full h-full bg-slate-100 rounded-[36px] overflow-hidden relative flex flex-col pt-6">
+
+            <!-- ==================== REACT NATIVE SPLASH SCREEN (5s DELAY) ==================== -->
+            <div id="rn-splash-screen" class="absolute inset-0 z-50 bg-[#3866E6] flex flex-col items-center justify-center p-6 transition-opacity duration-700 select-none">
+                
+                <!-- Skip Button -->
+                <button onclick="dismissRNSplash()" class="absolute top-10 right-6 px-3.5 py-1 text-xs font-bold text-white/90 bg-black/20 hover:bg-black/30 rounded-full cursor-pointer">
+                    Skip ➔
+                </button>
+
+                <!-- Centered Logo Group (Reference Match) -->
+                <div class="flex items-center gap-3 transform scale-110">
+                    <!-- Hexagon Keyhole Logo -->
+                    <svg class="w-16 h-16 shrink-0 text-[#0d1527]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="50,4 92,26.5 92,73.5 50,96 8,73.5 8,26.5" stroke="currentColor" stroke-width="5" fill="none" stroke-linejoin="round"/>
+                        <polygon points="50,14 83,32.5 83,67.5 50,86 17,67.5 17,32.5" stroke="currentColor" stroke-width="4.5" fill="none" stroke-linejoin="round"/>
+                        <circle cx="50" cy="42" r="9.5" fill="currentColor"/>
+                        <path d="M44.5 45.5 L41.5 66.5 L58.5 66.5 L55.5 45.5 Z" fill="currentColor"/>
+                    </svg>
+
+                    <!-- Text & 3D Shield -->
+                    <div class="flex flex-col justify-center">
+                        <div class="flex items-center gap-1.5 leading-none">
+                            <span class="text-3xl font-extrabold tracking-tight text-[#0d1527]">Secure</span>
+                            <svg class="w-9 h-10 shrink-0 drop-shadow-md" viewBox="0 0 60 70" fill="none">
+                                <defs>
+                                    <linearGradient id="rnSilver" x1="0" y1="0" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ffffff"/>
+                                        <stop offset="50%" stop-color="#cbd5e1"/>
+                                        <stop offset="100%" stop-color="#475569"/>
+                                    </linearGradient>
+                                    <linearGradient id="rnRed" x1="0" y1="0" x2="30" y2="70" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ef4444"/>
+                                        <stop offset="100%" stop-color="#991b1b"/>
+                                    </linearGradient>
+                                    <linearGradient id="rnBlue" x1="30" y1="0" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#3b82f6"/>
+                                        <stop offset="100%" stop-color="#1e3a8a"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M30 4 L54 12 V34 C54 50 30 64 30 64 C30 64 6 50 6 34 V12 L30 4 Z" fill="url(#rnSilver)"/>
+                                <path d="M30 7 L8 14 V34 C8 48 30 60 30 60 V7 Z" fill="url(#rnRed)"/>
+                                <path d="M30 7 L52 14 V34 C52 48 30 60 30 60 V7 Z" fill="url(#rnBlue)"/>
+                                <line x1="30" y1="7" x2="30" y2="60" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+                                <text x="30" y="41" font-family="sans-serif" font-weight="900" font-size="21" font-style="italic" fill="#ffffff" text-anchor="middle" letter-spacing="-1">TS</text>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-[#0d1527] mt-0.5">ThreatShield</span>
+                    </div>
+                </div>
+
+                <!-- 5-Second Timer -->
+                <div class="absolute bottom-12 flex flex-col items-center gap-2">
+                    <div class="w-48 h-1.5 bg-black/20 rounded-full overflow-hidden p-0.5">
+                        <div id="rn-progress-bar" class="h-full bg-white rounded-full w-0 animate-progress"></div>
+                    </div>
+                    <div class="text-xs font-medium text-white/90">
+                        Loading SecureHub... <span id="rn-timer">5</span>s
+                    </div>
+                </div>
+            </div>
+            <!-- ==================== END REACT NATIVE SPLASH ==================== -->
+
+            <!-- ==================== REACT NATIVE DASHBOARD SCREEN ==================== -->
+            <div class="flex-1 flex flex-col bg-slate-50 overflow-y-auto p-4">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-7 h-7 text-[#3866E6]" viewBox="0 0 100 100" fill="none">
+                            <polygon points="50,4 92,26.5 92,73.5 50,96 8,73.5 8,26.5" stroke="currentColor" stroke-width="6" fill="none"/>
+                            <polygon points="50,14 83,32.5 83,67.5 50,86 17,67.5 17,32.5" stroke="currentColor" stroke-width="5" fill="none"/>
+                            <circle cx="50" cy="42" r="9" fill="currentColor"/>
+                            <path d="M45 46 L42 66 L58 66 L55 46 Z" fill="currentColor"/>
+                        </svg>
+                        <div>
+                            <h1 class="font-extrabold text-base leading-none text-slate-900">Secure<span class="text-[#3866E6]">Hub</span></h1>
+                            <p class="text-[10px] text-slate-500 font-medium">React Native Mobile App</p>
+                        </div>
+                    </div>
+
+                    <button onclick="triggerRNSplash()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#3866E6] hover:bg-blue-700 rounded-lg cursor-pointer">
+                        Test Splash (5s)
+                    </button>
+                </div>
+
+                <!-- Banner -->
+                <div class="bg-[#3866E6] rounded-2xl p-5 text-white mb-4 shadow-md">
+                    <span class="inline-block px-2.5 py-0.5 bg-white/20 rounded-full text-[10px] font-bold uppercase mb-2">System Active</span>
+                    <h2 class="text-xl font-extrabold mb-1">React Native Mobile Client</h2>
+                    <p class="text-blue-100 text-xs leading-relaxed mb-4">
+                        React Native frontend initialized with a 5-second splash screen connected to the PHP Laravel API backend.
+                    </p>
+                    <button onclick="triggerRNSplash()" class="px-4 py-2 bg-white text-[#3866E6] font-bold text-xs rounded-xl hover:bg-blue-50 cursor-pointer">
+                        Replay 5s Splash Screen
+                    </button>
+                </div>
+
+                <!-- Telemetry Cards -->
+                <div class="space-y-3">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center gap-3">
+                        <span class="text-2xl">⏱️</span>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Splash Delay</p>
+                            <p class="text-sm font-extrabold text-slate-800">5.0 Seconds</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center gap-3">
+                        <span class="text-2xl">🛡️</span>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Mobile Protection</p>
+                            <p class="text-sm font-extrabold text-slate-800">ThreatShield Native v2.4</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center gap-3">
+                        <span class="text-2xl">⚙️</span>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Backend API</p>
+                            <p class="text-sm font-extrabold text-slate-800">PHP Laravel 12 API</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ==================== END REACT NATIVE DASHBOARD ==================== -->
+
+        </div>
+    </div>
+
+    <script>
+        let interval, timeout;
+        function startRNSplash() {
+            const splash = document.getElementById('rn-splash-screen');
+            const timer = document.getElementById('rn-timer');
+            const bar = document.getElementById('rn-progress-bar');
+            
+            splash.style.display = 'flex';
+            splash.classList.remove('opacity-0', 'pointer-events-none');
+            
+            let remaining = 5;
+            timer.textContent = remaining;
+
+            bar.classList.remove('animate-progress');
+            void bar.offsetWidth;
+            bar.classList.add('animate-progress');
+
+            clearInterval(interval);
+            clearTimeout(timeout);
+
+            interval = setInterval(() => {
+                remaining--;
+                if (remaining >= 0) timer.textContent = remaining;
+                if (remaining <= 0) clearInterval(interval);
+            }, 1000);
+
+            timeout = setTimeout(() => {
+                dismissRNSplash();
+            }, 5000);
+        }
+
+        function dismissRNSplash() {
+            const splash = document.getElementById('rn-splash-screen');
+            splash.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => { splash.style.display = 'none'; }, 700);
+            clearInterval(interval);
+            clearTimeout(timeout);
+        }
+
+        function triggerRNSplash() { startRNSplash(); }
+        document.addEventListener('DOMContentLoaded', startRNSplash);
+    </script>
+</body>
+</html>
