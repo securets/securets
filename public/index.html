@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureHub ThreatShield</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @keyframes fillProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .animate-progress { animation: fillProgress 5s linear forwards; }
+
+        .tab-btn { transition: color 0.15s; }
+        .tab-btn.active svg { color: #ffffff; }
+        .tab-btn.active .tab-dot { opacity: 1; }
+        .tab-btn:not(.active) svg { color: rgba(255,255,255,0.35); }
+        .tab-dot { opacity: 0; transition: opacity 0.15s; }
+    </style>
+</head>
+<body class="bg-[#0a0f1e] min-h-screen flex items-center justify-center">
+
+    <!-- Mobile Device Frame -->
+    <div class="w-[270px] h-[560px] bg-[#0d1a3a] rounded-[36px] shadow-2xl border-2 border-[#1a2a5e] relative overflow-hidden flex flex-col" style="box-shadow: 0 0 60px rgba(56,102,230,0.25);">
+
+        <!-- ========== SPLASH SCREEN ========== -->
+        <div id="splash" class="absolute inset-0 z-50 bg-[#3866E6] flex flex-col items-center justify-center transition-opacity duration-700">
+
+            <!-- Skip -->
+            <button onclick="dismissSplash()" class="absolute top-8 right-5 px-3 py-1 text-[10px] font-bold text-white/80 bg-black/20 hover:bg-black/30 rounded-full cursor-pointer">
+                Skip ➔
+            </button>
+
+            <!-- Logo Group -->
+            <div class="flex items-center gap-2.5">
+                <!-- Hexagon Keyhole -->
+                <svg class="w-14 h-14 text-[#0d1527]" viewBox="0 0 100 100" fill="none">
+                    <polygon points="50,4 92,26.5 92,73.5 50,96 8,73.5 8,26.5" stroke="currentColor" stroke-width="5" fill="none" stroke-linejoin="round"/>
+                    <polygon points="50,14 83,32.5 83,67.5 50,86 17,67.5 17,32.5" stroke="currentColor" stroke-width="4.5" fill="none" stroke-linejoin="round"/>
+                    <circle cx="50" cy="42" r="9.5" fill="currentColor"/>
+                    <path d="M44.5 45.5 L41.5 66.5 L58.5 66.5 L55.5 45.5 Z" fill="currentColor"/>
+                </svg>
+
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1 leading-none">
+                        <span class="text-2xl font-extrabold text-[#0d1527]">Secure</span>
+                        <!-- 3D Shield -->
+                        <svg class="w-8 h-9" viewBox="0 0 60 70" fill="none">
+                            <defs>
+                                <linearGradient id="sl" x1="0" y1="0" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#fff"/><stop offset="50%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#475569"/>
+                                </linearGradient>
+                                <linearGradient id="sr" x1="0" y1="0" x2="30" y2="70" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#991b1b"/>
+                                </linearGradient>
+                                <linearGradient id="sb" x1="30" y1="0" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M30 4 L54 12 V34 C54 50 30 64 30 64 C30 64 6 50 6 34 V12 L30 4 Z" fill="url(#sl)"/>
+                            <path d="M30 7 L8 14 V34 C8 48 30 60 30 60 V7 Z" fill="url(#sr)"/>
+                            <path d="M30 7 L52 14 V34 C52 48 30 60 30 60 V7 Z" fill="url(#sb)"/>
+                            <line x1="30" y1="7" x2="30" y2="60" stroke="#fff" stroke-width="1" opacity="0.6"/>
+                            <text x="30" y="41" font-family="sans-serif" font-weight="900" font-size="21" font-style="italic" fill="#fff" text-anchor="middle" letter-spacing="-1">TS</text>
+                        </svg>
+                    </div>
+                    <span class="text-[11px] font-semibold text-[#0d1527]">ThreatShield</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="absolute bottom-10 flex flex-col items-center gap-1.5">
+                <div class="w-40 h-1.5 bg-black/20 rounded-full overflow-hidden">
+                    <div id="splash-bar" class="h-full bg-white rounded-full w-0 animate-progress"></div>
+                </div>
+                <span class="text-[10px] text-white/80">Loading SecureHub... <span id="splash-timer">5</span>s</span>
+            </div>
+        </div>
+        <!-- ========== END SPLASH ========== -->
+
+        <!-- ========== MAIN APP SCREEN ========== -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Header Bar -->
+            <div class="bg-[#1a2d6b] px-4 py-3 flex items-center gap-2 shrink-0">
+                <svg class="w-7 h-7 text-white" viewBox="0 0 100 100" fill="none">
+                    <polygon points="50,4 92,26.5 92,73.5 50,96 8,73.5 8,26.5" stroke="currentColor" stroke-width="6" fill="none" stroke-linejoin="round"/>
+                    <polygon points="50,14 83,32.5 83,67.5 50,86 17,67.5 17,32.5" stroke="currentColor" stroke-width="5.5" fill="none" stroke-linejoin="round"/>
+                    <circle cx="50" cy="42" r="9" fill="currentColor"/>
+                    <path d="M45 46 L42 66 L58 66 L55 46 Z" fill="currentColor"/>
+                </svg>
+                <div class="flex items-center gap-1 leading-none">
+                    <span class="text-base font-extrabold text-white">Secure</span>
+                    <svg class="w-5 h-6" viewBox="0 0 60 70" fill="none">
+                        <defs>
+                            <linearGradient id="hl" x1="0" y1="0" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#fff"/><stop offset="50%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#475569"/>
+                            </linearGradient>
+                            <linearGradient id="hr" x1="0" y1="0" x2="30" y2="70" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#991b1b"/>
+                            </linearGradient>
+                            <linearGradient id="hb" x1="30" y1="0" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M30 4 L54 12 V34 C54 50 30 64 30 64 C30 64 6 50 6 34 V12 L30 4 Z" fill="url(#hl)"/>
+                        <path d="M30 7 L8 14 V34 C8 48 30 60 30 60 V7 Z" fill="url(#hr)"/>
+                        <path d="M30 7 L52 14 V34 C52 48 30 60 30 60 V7 Z" fill="url(#hb)"/>
+                        <line x1="30" y1="7" x2="30" y2="60" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+                        <text x="30" y="41" font-family="sans-serif" font-weight="900" font-size="21" font-style="italic" fill="#fff" text-anchor="middle" letter-spacing="-1">TS</text>
+                    </svg>
+                </div>
+                <span class="text-[11px] text-blue-200 ml-0.5 font-medium">ThreatShield</span>
+            </div>
+
+            <!-- Welcome Sub-Header -->
+            <div class="bg-[#152050] px-4 py-3 shrink-0">
+                <p class="text-white font-bold text-sm">Welcome, User!</p>
+                <p class="text-[#4fc3f7] text-[11px] mt-0.5">All linked accounts are protected.</p>
+            </div>
+
+            <!-- Body (Notifications) -->
+            <div class="flex-1 bg-[#101828] flex items-center justify-center">
+                <p class="text-[#3a4f7a] text-xs font-medium">No Notifications.</p>
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="bg-[#0d1a3a] border-t border-[#1a2a5e] flex items-center justify-around px-4 py-3 shrink-0">
+
+                <!-- Tab 1: Dashboard (active by default) -->
+                <button class="tab-btn active flex flex-col items-center gap-1" onclick="setTab(this)">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span class="tab-dot w-1 h-1 rounded-full bg-white"></span>
+                </button>
+
+                <!-- Tab 2: Integrations -->
+                <button class="tab-btn flex flex-col items-center gap-1" onclick="setTab(this)">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2v4M10 2v4M8 6h8a2 2 0 0 1 2 2v2a6 6 0 0 1-12 0V8a2 2 0 0 1 2-2z"/>
+                        <path d="M12 16v6M9 22h6"/>
+                    </svg>
+                    <span class="tab-dot w-1 h-1 rounded-full bg-white"></span>
+                </button>
+
+                <!-- Tab 3: Settings -->
+                <button class="tab-btn flex flex-col items-center gap-1" onclick="setTab(this)">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <span class="tab-dot w-1 h-1 rounded-full bg-white"></span>
+                </button>
+
+            </div>
+        </div>
+        <!-- ========== END MAIN APP ========== -->
+
+    </div>
+
+    <script>
+        let interval, timeout;
+
+        function startSplash() {
+            const splash = document.getElementById('splash');
+            const timer  = document.getElementById('splash-timer');
+            const bar    = document.getElementById('splash-bar');
+
+            splash.style.display = 'flex';
+            splash.style.opacity = '1';
+            splash.style.pointerEvents = 'auto';
+
+            let remaining = 5;
+            timer.textContent = remaining;
+
+            bar.classList.remove('animate-progress');
+            void bar.offsetWidth;
+            bar.classList.add('animate-progress');
+
+            clearInterval(interval);
+            clearTimeout(timeout);
+
+            interval = setInterval(() => {
+                remaining--;
+                if (remaining >= 0) timer.textContent = remaining;
+                if (remaining <= 0) clearInterval(interval);
+            }, 1000);
+
+            timeout = setTimeout(dismissSplash, 5000);
+        }
+
+        function dismissSplash() {
+            const splash = document.getElementById('splash');
+            splash.style.opacity = '0';
+            splash.style.pointerEvents = 'none';
+            setTimeout(() => { splash.style.display = 'none'; }, 700);
+            clearInterval(interval);
+            clearTimeout(timeout);
+        }
+
+        function setTab(btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', startSplash);
+    </script>
+</body>
+</html>
