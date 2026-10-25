@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IntegrationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 // ── Landing page ──────────────────────────────────────────────────────────────
@@ -27,8 +29,15 @@ Route::get('/i/{integration:gate_token}/events/{event}', [IntegrationController:
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard',    [AuthController::class, 'dashboard'])->name('dashboard');
     Route::get('/integrations', [IntegrationController::class, 'webIndex'])->name('integrations');
-    Route::get('/profile',      [AuthController::class, 'profile'])->name('profile');
-    Route::get('/settings',     [AuthController::class, 'settings'])->name('settings');
+
+    // Account & Preferences
+    Route::get('/profile',            [ProfileController::class, 'edit'])->name('profile');
+    Route::patch('/profile',          [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password',   [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/profile/archive',   [ProfileController::class, 'archive'])->name('profile.archive');
+
+    Route::get('/settings',           [SettingsController::class, 'edit'])->name('settings');
+    Route::patch('/settings',         [SettingsController::class, 'update'])->name('settings.update');
 
     // ── Web-only JSON endpoints (session-authenticated, used by integrations.blade.php) ──
     Route::prefix('web')->group(function () {

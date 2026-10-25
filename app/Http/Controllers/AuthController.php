@@ -27,6 +27,14 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            if ($user->isArchived()) {
+                $user->update(['archived_at' => null]);
+                session()->flash('status', 'Welcome back! Your archived account has been reactivated.');
+            }
+
             return redirect()->intended(route('integrations'));
         }
 
@@ -66,16 +74,6 @@ class AuthController extends Controller
     public function dashboard()
     {
         return view('dashboard');
-    }
-
-    public function profile()
-    {
-        return view('account.profile');
-    }
-
-    public function settings()
-    {
-        return view('account.settings');
     }
 
     // ── Logout ────────────────────────────────────────────────
