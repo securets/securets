@@ -8,7 +8,7 @@
     </div>
     <div class="nav-right">
         <button type="button" class="user-avatar" id="profile-trigger" aria-label="Open profile" aria-expanded="false">
-            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+            {{ Auth::user()->initials() }}
         </button>
     </div>
 </nav>

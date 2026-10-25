@@ -20,11 +20,13 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property array|null $preferences
  * @property string|null $remember_token
+ * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'preferences', 'archived_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -41,7 +43,25 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'preferences' => 'array',
+            'archived_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if the user account is archived.
+     */
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+    /**
+     * Get a specific preference value with a default fallback.
+     */
+    public function preference(string $key, mixed $default = null): mixed
+    {
+        return data_get($this->preferences, $key, $default);
     }
 
     /**
