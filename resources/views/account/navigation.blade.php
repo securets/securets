@@ -5,6 +5,7 @@
     <div class="nav-links">
         <a href="{{ route('dashboard') }}" @class(['active' => ($activeNav ?? null) === 'dashboard'])>Dashboard</a>
         <a href="{{ route('integrations') }}" @class(['active' => ($activeNav ?? null) === 'integrations'])>Integrations</a>
+        <a href="{{ route('subscription') }}" @class(['active' => ($activeNav ?? null) === 'subscription'])>Subscription</a>
     </div>
     <div class="nav-right">
         <button type="button" class="user-avatar" id="profile-trigger" aria-label="Open profile" aria-expanded="false">

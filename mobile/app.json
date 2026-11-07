@@ -4,7 +4,13 @@
     "slug": "securehub-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "securets",
     "userInterfaceStyle": "dark",
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-font"
+    ],
     "androidNavigationBar": {
       "visible": "sticky-immersive",
       "barStyle": "light-content",

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // ── Landing page ──────────────────────────────────────────────────────────────
@@ -52,31 +53,25 @@ Route::middleware('auth')->group(function () {
         Route::get('/integrations/{integration}/totp', [IntegrationController::class, 'totpCode']);
 
         // Read-only history on web. Approve / decline stays on the mobile app.
-        Route::get('/login-events', [IntegrationController::class, 'history']);
-        Route::patch('/login-events/{event}/archive', [IntegrationController::class, 'archiveEvent']);
-        Route::delete('/login-events/{event}', [IntegrationController::class, 'destroyEvent']);
-    });
-});
+        Route::get('/login-events',                            [IntegrationController::class, 'history']);
+        Route::patch('/login-events/{event}/archive',          [IntegrationController::class, 'archiveEvent']);
+        Route::delete('/login-events/{event}',                 [IntegrationController::class, 'destroyEvent']);
 
-// ── Public API endpoints (status / health) ────────────────────────────────────
-Route::prefix('api')->group(function () {
-    Route::get('/status', function () {
-        return response()->json([
-            'status' => 'Operational',
-            'protection' => 'ThreatShield Mobile v2.4',
-            'splash_delay' => '5.0 Seconds',
-            'backend' => 'PHP Laravel 12 API',
-            'timestamp' => now()->toIso8601String(),
-        ]);
+        // Subscription checkout (web AJAX)
+        Route::post('/subscription/checkout', [SubscriptionController::class, 'createCheckoutSession'])->name('subscription.checkout');
+        // Stripe-hosted billing portal (cancel / update card)
+        Route::post('/subscription/portal',   [SubscriptionController::class, 'billingPortal'])->name('subscription.portal');
     });
 
-    Route::get('/health', function () {
-        return response()->json([
-            'healthy' => true,
-            'service' => 'SecureHub ThreatShield API',
-        ]);
-    });
+    // ── Subscription pages ────────────────────────────────────────────────────
+    Route::get('/subscription',         [SubscriptionController::class, 'show'])->name('subscription');
+    Route::get('/subscription/success', [SubscriptionController::class, 'success'])->name('subscription.success');
+    Route::get('/subscription/cancel',  [SubscriptionController::class, 'cancel'])->name('subscription.cancel');
 });
+
+// ── Mobile return pages (public — the in-app browser has no web session) ──────
+Route::get('/subscription/mobile-success', [SubscriptionController::class, 'mobileSuccess'])->name('subscription.mobile-success');
+Route::get('/subscription/mobile-cancel',  [SubscriptionController::class, 'mobileCancel'])->name('subscription.mobile-cancel');
 
 // ── Admin Web Routes (folder: routes/admin/) ──────────────────────────────────
 require __DIR__ . '/admin/admin.php';

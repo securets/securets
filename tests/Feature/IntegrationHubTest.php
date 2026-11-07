@@ -8,11 +8,11 @@ test('guests are sent to login when opening the integration hub', function () {
         ->assertRedirect(route('login'));
 });
 
-test('the landing page links to the integration hub', function () {
+test('the landing page links to sign in', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('Integration Hub', false)
-        ->assertSee(route('integrations', absolute: false), false);
+        ->assertSee('Sign In', false)
+        ->assertSee(route('login', absolute: false), false);
 });
 
 test('a signed-in user can open the integration hub', function () {

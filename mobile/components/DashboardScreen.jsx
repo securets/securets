@@ -6,10 +6,11 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import IntegrationScreen  from './IntegrationScreen';
-import NotificationScreen from './NotificationScreen';
-import SettingsScreen     from './SettingsScreen';
-import LoginModal         from './LoginModal';
+import IntegrationScreen   from './IntegrationScreen';
+import NotificationScreen  from './NotificationScreen';
+import SettingsScreen      from './SettingsScreen';
+import SubscriptionScreen  from './SubscriptionScreen';
+import LoginModal          from './LoginModal';
 import { integrationApi } from '../src/api/integrations';
 import { useTheme } from '../src/theme/ThemeContext';
 
@@ -50,6 +51,7 @@ function DashboardHome({
   onRespondToApproval,
   approvalDecision,
   onOpenNotifications,
+  colors,
   styles,
 }) {
   const [recentNotifications, setRecentNotifications] = useState([]);
@@ -124,7 +126,7 @@ function DashboardHome({
                 activeOpacity={0.85}
               >
                 {approvalDecision === 'declined'
-                  ? <ActivityIndicator color="#F87171" size="small" />
+                  ? <ActivityIndicator color={colors.danger} size="small" />
                   : <Text style={styles.homeApprovalDeclineText}>Decline</Text>}
               </TouchableOpacity>
             </View>
@@ -137,11 +139,11 @@ function DashboardHome({
             <View style={styles.statsGrid}>
               <View style={styles.statCard}>
                 <Text style={styles.statLabel}>Protection Status</Text>
-                <Text style={[styles.statValue, { color: '#00BBFF' }]}>{protectionStatus}</Text>
+                <Text style={[styles.statValue, { color: colors.blueLight }]}>{protectionStatus}</Text>
               </View>
               <View style={styles.statCard}>
                 <Text style={styles.statLabel}>Threats Blocked</Text>
-                <Text style={[styles.statValue, { color: '#F8FAFC' }]}>{threatsBlockedCount}</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{threatsBlockedCount}</Text>
               </View>
               <View style={styles.statCard}>
                 <Text style={styles.statLabel}>Integrated Apps</Text>
@@ -149,14 +151,14 @@ function DashboardHome({
               </View>
               <View style={styles.statCard}>
                 <Text style={styles.statLabel}>Alerts</Text>
-                <Text style={[styles.statValue, { color: '#F8FAFC' }]}>{alertsCount}</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{alertsCount}</Text>
               </View>
             </View>
 
             {/* ── All Systems Operational panel ── */}
             <View style={styles.statusPanel}>
               <View style={styles.statusIconWrap}>
-                <Feather name="shield" size={18} color="#00BBFF" strokeWidth={1.75} />
+                <Feather name="shield" size={18} color={colors.blueLight} strokeWidth={1.75} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.statusTitle}>All Systems Operational</Text>
@@ -193,10 +195,10 @@ function DashboardHome({
                         size={16}
                         color={
                           notif.status === 'approved'
-                            ? '#00BBFF'
+                            ? colors.blueLight
                             : notif.status === 'declined'
-                            ? '#F87171'
-                            : '#94A3B8'
+                            ? colors.danger
+                            : colors.muted
                         }
                         strokeWidth={1.75}
                       />
@@ -205,7 +207,7 @@ function DashboardHome({
                       <Text style={styles.summaryItemTitle}>{notif.integration?.name ?? 'SecureTS Alert'}</Text>
                       <Text style={styles.summaryItemMeta}>{new Date(notif.created_at).toLocaleTimeString()}</Text>
                     </View>
-                    <Feather name="chevron-right" size={16} color="#64748B" strokeWidth={1.75} />
+                    <Feather name="chevron-right" size={16} color={colors.muted} strokeWidth={1.75} />
                   </TouchableOpacity>
                 ))
               ) : (
@@ -220,7 +222,7 @@ function DashboardHome({
         {!user && (
           <View style={styles.emptyState}>
             <View style={styles.emptyIconBox}>
-              <Feather name="shield" size={24} color="#00BBFF" strokeWidth={1.75} />
+              <Feather name="shield" size={24} color={colors.blueLight} strokeWidth={1.75} />
             </View>
             <Text style={styles.emptyTitle}>Secure Gateway</Text>
             <Text style={styles.emptyText}>
@@ -239,6 +241,7 @@ function ApprovalPopup({
   onDismiss,
   onRespond,
   approvalDecision,
+  colors,
   styles,
 }) {
   if (!visible || !event) return null;
@@ -280,11 +283,11 @@ function ApprovalPopup({
 }
 
 // ─── Guest Gate (shown over Integration/Alerts when not logged in) ───────────
-function GuestGate({ tabName, onLoginPress, styles }) {
+function GuestGate({ tabName, onLoginPress, colors, styles }) {
   return (
     <View style={styles.gateWrap}>
       <View style={styles.emptyIconBox}>
-        <Feather name="lock" size={22} color="#00BBFF" strokeWidth={1.75} />
+        <Feather name="lock" size={22} color={colors.blueLight} strokeWidth={1.75} />
       </View>
       <Text style={styles.gateTitle}>Sign in required</Text>
       <Text style={styles.gateSub}>
@@ -302,8 +305,8 @@ export default function DashboardScreen({
   user, activeTab, onTabChange, onLoginSuccess, onLogout,
   pushEventId, onPushEventConsumed,
 }) {
-  const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const colors = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [pendingApproval, setPendingApproval] = useState(null);
   const [pendingAlertsCount, setPendingAlertsCount] = useState(0);
@@ -469,19 +472,25 @@ export default function DashboardScreen({
             onRespondToApproval={respondToApproval}
             approvalDecision={approvalDecision}
             onOpenNotifications={() => onTabChange('notifications')}
+            colors={colors}
             styles={styles}
           />
         );
 
       case 'integrations':
         return isLoggedIn
-          ? <IntegrationScreen />
-          : <GuestGate tabName="Apps" onLoginPress={openLogin} styles={styles} />;
+          ? <IntegrationScreen onTabChange={onTabChange} />
+          : <GuestGate tabName="Apps" onLoginPress={openLogin} colors={colors} styles={styles} />;
 
       case 'notifications':
         return isLoggedIn
           ? <NotificationScreen user={user} />
-          : <GuestGate tabName="Login Approvals" onLoginPress={openLogin} styles={styles} />;
+          : <GuestGate tabName="Login Approvals" onLoginPress={openLogin} colors={colors} styles={styles} />;
+
+      case 'subscription':
+        return isLoggedIn
+          ? <SubscriptionScreen user={user} />
+          : <GuestGate tabName="Subscription" onLoginPress={openLogin} colors={colors} styles={styles} />;
 
       case 'settings':
         return (
@@ -494,7 +503,7 @@ export default function DashboardScreen({
         );
 
       default:
-        return <DashboardHome user={user} styles={styles} />;
+        return <DashboardHome user={user} colors={colors} styles={styles} />;
     }
   };
 
@@ -502,7 +511,7 @@ export default function DashboardScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0E1326" />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.surface} />
 
       {/* Header — only on dashboard tab */}
       {activeTab === 'dashboard' && (
@@ -519,10 +528,11 @@ export default function DashboardScreen({
       {/* ── Bottom Navigation ── */}
       <View style={styles.bottomNav}>
         {[
-          { key: 'dashboard',     icon: 'grid',     label: 'Home' },
-          { key: 'integrations',  icon: 'link',     label: 'Apps' },
-          { key: 'notifications', icon: 'bell',     label: 'Alerts' },
-          { key: 'settings',      icon: 'settings', label: 'Settings' },
+          { key: 'dashboard',     icon: 'grid',        label: 'Home' },
+          { key: 'integrations',  icon: 'link',        label: 'Apps' },
+          { key: 'notifications', icon: 'bell',        label: 'Alerts' },
+          { key: 'subscription',  icon: 'credit-card', label: 'Subscription' },
+          { key: 'settings',      icon: 'settings',    label: 'Settings' },
         ].map(tab => {
           const isActive = activeTab === tab.key;
           const showBadge = tab.key === 'notifications' && hasActiveAlerts;
@@ -541,7 +551,7 @@ export default function DashboardScreen({
                 <Feather
                   name={tab.icon}
                   size={18}
-                  color={isActive ? '#00BBFF' : '#94A3B8'}
+                  color={isActive ? colors.blueLight : colors.muted}
                   strokeWidth={1.75}
                 />
                 {showBadge && <View style={styles.navAlertDot} />}
@@ -564,6 +574,7 @@ export default function DashboardScreen({
           onDismiss={dismissApprovalPopup}
           onRespond={respondToApproval}
           approvalDecision={approvalDecision}
+          colors={colors}
           styles={styles}
         />
       )}
@@ -578,17 +589,21 @@ export default function DashboardScreen({
   );
 }
 
-const createStyles = () => StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0E1326' },
+// Accent tints are translucent so they read correctly on both palettes.
+const ACCENT_TINT = 'rgba(61, 90, 241, 0.35)';
+const ACCENT_TINT_STRONG = 'rgba(61, 90, 241, 0.45)';
+
+const createStyles = (C) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.bg },
 
   // Header
   header: {
-    backgroundColor: '#0E1326',
+    backgroundColor: C.surface,
     paddingTop: 52,
     paddingBottom: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: C.border,
   },
   logoRow: {
     width: '100%',
@@ -604,33 +619,33 @@ const createStyles = () => StyleSheet.create({
 
   // Welcome
   welcomeBanner: {
-    backgroundColor: '#0E1326',
+    backgroundColor: C.surface,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: C.border,
   },
   welcomeTitle: {
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.3,
   },
   welcomeSub: {
-    color: '#94A3B8',
+    color: C.muted,
     fontSize: 12,
     fontWeight: '500',
   },
 
   // Summary Section
   summarySection: {
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: C.border,
   },
   summaryHeader: {
     flexDirection: 'row',
@@ -639,12 +654,12 @@ const createStyles = () => StyleSheet.create({
     marginBottom: 12,
   },
   summaryTitle: {
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 14,
     fontWeight: '700',
   },
   summaryLink: {
-    color: '#00BBFF',
+    color: C.blueLight,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -653,26 +668,26 @@ const createStyles = () => StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    borderTopColor: C.border,
   },
   summaryIconWrap: {
     width: 34,
     height: 34,
-    backgroundColor: '#0E1326',
+    backgroundColor: C.bg,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: C.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   summaryItemTitle: {
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 13,
     fontWeight: '600',
   },
   summaryItemMeta: {
-    color: '#94A3B8',
+    color: C.muted,
     fontSize: 11,
     marginTop: 2,
   },
@@ -681,7 +696,7 @@ const createStyles = () => StyleSheet.create({
     alignItems: 'center',
   },
   summaryEmptyText: {
-    color: '#64748B',
+    color: C.muted,
     fontSize: 12,
   },
 
@@ -693,27 +708,27 @@ const createStyles = () => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: '20%',
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderRadius: 12,
     padding: 28,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: C.border,
   },
   emptyIconBox: {
     width: 48,
     height: 48,
     borderRadius: 10,
-    backgroundColor: '#0E1326',
+    backgroundColor: C.bg,
     borderWidth: 1,
-    borderColor: 'rgba(0, 187, 255, 0.25)',
+    borderColor: ACCENT_TINT,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
   },
   homeApprovalCard: {
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderWidth: 1,
-    borderColor: 'rgba(0, 187, 255, 0.35)',
+    borderColor: ACCENT_TINT_STRONG,
     borderRadius: 12,
     padding: 18,
     marginBottom: 16,
@@ -726,7 +741,7 @@ const createStyles = () => StyleSheet.create({
     marginBottom: 10,
   },
   homeApprovalEyebrow: {
-    color: '#00BBFF',
+    color: C.blueLight,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.8,
@@ -736,28 +751,28 @@ const createStyles = () => StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 6,
-    backgroundColor: '#0E1326',
+    backgroundColor: C.bg,
     borderWidth: 1,
-    borderColor: 'rgba(0, 187, 255, 0.3)',
+    borderColor: ACCENT_TINT,
   },
   homeApprovalReviewText: {
-    color: '#00BBFF',
+    color: C.blueLight,
     fontSize: 11,
     fontWeight: '600',
   },
   homeApprovalApp: {
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 4,
   },
   homeApprovalMeta: {
-    color: '#94A3B8',
+    color: C.muted,
     fontSize: 12,
     marginBottom: 8,
   },
   homeApprovalText: {
-    color: '#94A3B8',
+    color: C.muted,
     fontSize: 12,
     lineHeight: 18,
     marginBottom: 14,
@@ -772,26 +787,26 @@ const createStyles = () => StyleSheet.create({
     paddingHorizontal: 12,
   },
   homeApprovalApprove: {
-    backgroundColor: '#4063D7',
+    backgroundColor: C.blue,
   },
   homeApprovalApproveText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
   homeApprovalDecline: {
-    backgroundColor: '#0E1326',
+    backgroundColor: C.bg,
     borderWidth: 1,
     borderColor: 'rgba(239, 68, 68, 0.35)',
   },
-  homeApprovalDeclineText: { color: '#F87171', fontSize: 13, fontWeight: '600' },
-  emptyTitle: { color: '#F8FAFC', fontSize: 16, fontWeight: '700', marginBottom: 6 },
-  emptyText:  { color: '#94A3B8', fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  homeApprovalDeclineText: { color: C.danger, fontSize: 13, fontWeight: '600' },
+  emptyTitle: { color: C.text, fontSize: 16, fontWeight: '700', marginBottom: 6 },
+  emptyText:  { color: C.muted, fontSize: 12, textAlign: 'center', lineHeight: 18 },
 
   // Guest gate
   gateWrap: {
     flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32,
   },
-  gateTitle: { color: '#F8FAFC', fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  gateSub:   { color: '#94A3B8', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
+  gateTitle: { color: C.text, fontSize: 18, fontWeight: '700', marginBottom: 8 },
+  gateSub:   { color: C.muted, fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
   gateBtn: {
-    backgroundColor: '#4063D7',
+    backgroundColor: C.blue,
     borderRadius: 8,
     paddingVertical: 13,
     paddingHorizontal: 36,
@@ -821,9 +836,9 @@ const createStyles = () => StyleSheet.create({
     justifyContent: 'center',
   },
   navSquareActive: {
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderWidth: 1,
-    borderColor: 'rgba(0, 187, 255, 0.3)',
+    borderColor: ACCENT_TINT,
   },
   navAlertDot: {
     position: 'absolute',
@@ -841,7 +856,7 @@ const createStyles = () => StyleSheet.create({
 
   popupBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(14, 19, 38, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -849,27 +864,27 @@ const createStyles = () => StyleSheet.create({
   popupCard: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderRadius: 12,
     padding: 22,
     borderWidth: 1,
-    borderColor: 'rgba(0, 187, 255, 0.3)',
+    borderColor: ACCENT_TINT_STRONG,
   },
   popupTitle: {
-    color: '#00BBFF',
+    color: C.blueLight,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  popupApp: { color: '#F8FAFC', fontSize: 17, fontWeight: '700', marginBottom: 4 },
-  popupMeta: { color: '#94A3B8', fontSize: 12, marginBottom: 18 },
+  popupApp: { color: C.text, fontSize: 17, fontWeight: '700', marginBottom: 4 },
+  popupMeta: { color: C.muted, fontSize: 12, marginBottom: 18 },
   popupActions: { flexDirection: 'row', gap: 10 },
   popupActionDisabled: { opacity: 0.6 },
   popupApprove: {
     flex: 1,
-    backgroundColor: '#4063D7',
+    backgroundColor: C.blue,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
@@ -877,14 +892,14 @@ const createStyles = () => StyleSheet.create({
   popupApproveText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
   popupDecline: {
     flex: 1,
-    backgroundColor: '#0E1326',
+    backgroundColor: C.bg,
     borderWidth: 1,
     borderColor: 'rgba(239, 68, 68, 0.35)',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
   },
-  popupDeclineText: { color: '#F87171', fontSize: 13, fontWeight: '600' },
+  popupDeclineText: { color: C.danger, fontSize: 13, fontWeight: '600' },
 
   // ── Stat cards (minimalist grid) ───────────────────────────────────────
   statsGrid: {
@@ -896,16 +911,16 @@ const createStyles = () => StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderRadius: 10,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: C.border,
   },
   statLabel: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: C.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 6,
@@ -917,20 +932,20 @@ const createStyles = () => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderRadius: 10,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: C.border,
     marginBottom: 10,
   },
   statusIconWrap: {
     width: 38,
     height: 38,
-    backgroundColor: '#0E1326',
+    backgroundColor: C.bg,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0, 187, 255, 0.25)',
+    borderColor: ACCENT_TINT,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

@@ -49,6 +49,19 @@ class IntegrationController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $user  = $request->user();
+        $limit = $user->planLimit();
+
+        // Enforce plan integration limit
+        if ($limit !== null && $user->integrations()->count() >= $limit) {
+            return response()->json([
+                'upgrade_required' => true,
+                'plan'             => $user->currentPlan(),
+                'limit'            => $limit,
+                'message'          => "Your {$user->currentPlan()} plan allows up to {$limit} integrations. Upgrade to add more.",
+            ], 403);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:100',
             'url' => 'required|url:http,https|max:255',

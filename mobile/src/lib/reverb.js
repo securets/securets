@@ -12,7 +12,7 @@
  */
 
 import * as PusherModule from 'pusher-js';
-import { API_BASE_URL } from '../api/client';
+import { getApiBaseUrl, isUsingFallbackEndpoint } from '../api/client';
 import { getStoredToken } from '../api/client';
 
 // pusher-js resolves to a different bundle per platform (Metro picks the
@@ -27,6 +27,20 @@ const HOST      = process.env.EXPO_PUBLIC_REVERB_HOST     ?? '127.0.0.1';
 const PORT      = Number(process.env.EXPO_PUBLIC_REVERB_PORT    ?? '8080');
 const SCHEME    = process.env.EXPO_PUBLIC_REVERB_SCHEME   ?? 'http';
 const USE_TLS   = SCHEME === 'https';
+
+// Reverb runs on the same machine as the API, so once the API client has failed
+// over to its backup endpoint the WebSocket must follow it - otherwise the app
+// would keep talking to a host it has already proved unreachable.
+const resolveHost = () => {
+  if (!isUsingFallbackEndpoint()) {
+    return HOST;
+  }
+  try {
+    return new URL(getApiBaseUrl()).hostname;
+  } catch {
+    return HOST;
+  }
+};
 
 let _pusherInstance = null;
 
@@ -44,14 +58,14 @@ export function createReverbClient(sanctumToken) {
   }
 
   _pusherInstance = new Pusher(APP_KEY, {
-    wsHost:           HOST,
+    wsHost:           resolveHost(),
     wsPort:           USE_TLS ? 443 : PORT,
     wssPort:          443,
     forceTLS:         USE_TLS,
     enabledTransports: ['ws', 'wss'],
     disableStats:     true,
     cluster:          'mt1',           // Reverb ignores this, but field is required
-    authEndpoint:     `${API_BASE_URL}/broadcasting/auth`,
+    authEndpoint:     `${getApiBaseUrl()}/broadcasting/auth`,
     auth: {
       headers: {
         Authorization: `Bearer ${sanctumToken}`,

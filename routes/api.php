@@ -3,6 +3,7 @@
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\MobileAuthController;
+use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // ── Mobile Auth (public) ──────────────────────────────────────────────────────
@@ -49,7 +50,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/login-events/pending', [IntegrationController::class, 'pendingApprovals']);
 
     // Devices (Expo push tokens)
-    Route::post('/devices', [DeviceController::class, 'register']);
-    Route::get('/devices', [DeviceController::class, 'index']);
-    Route::delete('/devices/{device}', [DeviceController::class, 'destroy']);
+    Route::post('/devices',              [DeviceController::class, 'register']);
+    Route::get('/devices',               [DeviceController::class, 'index']);
+    Route::delete('/devices/{device}',   [DeviceController::class, 'destroy']);
+
+    // Subscription (mobile)
+    Route::get('/subscription/status',     [SubscriptionController::class, 'status']);
+    Route::post('/subscription/checkout',  [SubscriptionController::class, 'createCheckoutSession']);
+    Route::post('/subscription/portal',    [SubscriptionController::class, 'billingPortal']);
 });
+
+// ── Stripe Webhook (public — no auth, no CSRF) ────────────────────────────────
+Route::post('/stripe/webhook', [SubscriptionController::class, 'webhook']);

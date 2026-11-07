@@ -245,6 +245,43 @@
         /* Tabs panel */
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
+
+        /* ── Upgrade overlay ── */
+        .upgrade-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+            z-index: 300; align-items: center; justify-content: center;
+        }
+        .upgrade-overlay.open { display: flex; }
+        .upgrade-card {
+            background: #1E293B; border: 1px solid rgba(139,92,246,0.35);
+            border-radius: 24px; padding: 40px 36px; width: 100%; max-width: 420px;
+            text-align: center; animation: slideUp 0.22s ease;
+            position: relative;
+        }
+        .upgrade-card .close-btn {
+            position: absolute; top: 16px; right: 16px;
+            background: none; border: none; color: #94A3B8;
+            font-size: 20px; cursor: pointer; line-height: 1;
+        }
+        .upgrade-icon { font-size: 48px; margin-bottom: 16px; }
+        .upgrade-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .upgrade-card p  { font-size: 14px; color: #94A3B8; line-height: 1.6; margin-bottom: 28px; }
+        .upgrade-current-plan {
+            display: inline-block; background: rgba(139,92,246,0.15);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 20px; padding: 4px 12px;
+            font-size: 12px; font-weight: 700; color: #A78BFA; margin-bottom: 20px;
+        }
+        .btn-view-plans {
+            display: block; width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #3D5AF1, #8B5CF6);
+            color: #fff; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none; transition: filter 0.2s;
+        }
+        .btn-view-plans:hover { filter: brightness(1.12); }
     </style>
 </head>
 <body>
@@ -364,6 +401,20 @@
 
 </div>
 
+</div>
+
+<!-- ── Upgrade Plan Overlay ── -->
+<div class="upgrade-overlay" id="upgradeOverlay">
+    <div class="upgrade-card">
+        <button class="close-btn" onclick="closeUpgradeOverlay()" aria-label="Close">&times;</button>
+        <div class="upgrade-icon">🔒</div>
+        <div class="upgrade-current-plan" id="upgradePlanBadge">Free Plan</div>
+        <h2>Integration Limit Reached</h2>
+        <p id="upgradeMsg">Your current plan allows up to <strong>3</strong> integrations. Upgrade to connect more apps and unlock additional security features.</p>
+        <a href="{{ route('subscription') }}" class="btn-view-plans">View Subscription Plans →</a>
+    </div>
+</div>
+
 <!-- ── Add App Modal ── -->
 <div class="modal-backdrop" id="addModal">
     <div class="modal">
@@ -440,6 +491,18 @@ async function addApp() {
             return;
         }
         const firstError = body.errors ? Object.values(body.errors)[0][0] : null;
+        // Plan limit reached — show the upgrade overlay
+        if (res.status === 403 && body.upgrade_required) {
+            closeModal();
+            flashEl.hidden = true;
+            const planLabel = (body.plan ?? 'free').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+            document.getElementById('upgradePlanBadge').textContent = planLabel + ' Plan';
+            document.getElementById('upgradeMsg').innerHTML =
+                `Your <strong>${planLabel}</strong> plan allows up to <strong>${body.limit ?? 3}</strong> integration${(body.limit ?? 3) !== 1 ? 's' : ''}. Upgrade to connect more apps.`;
+            document.getElementById('upgradeOverlay').classList.add('open');
+            btn.disabled = false; btn.textContent = 'Add Integration';
+            return;
+        }
         errEl.textContent = firstError || body.message || 'Could not add this app. Check the URL and try again.';
         setFlash('error', errEl.textContent);
     } catch (e) {
@@ -660,7 +723,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
+    document.getElementById('upgradeOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeUpgradeOverlay();
+    });
 });
+
+function closeUpgradeOverlay() {
+    document.getElementById('upgradeOverlay').classList.remove('open');
+}
 </script>
 
 </body>

@@ -2,24 +2,45 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// API base URL — set EXPO_PUBLIC_API_URL in mobile/.env
+// API endpoints — set in mobile/.env:
+//   EXPO_PUBLIC_API_URL           primary endpoint
+//   EXPO_PUBLIC_API_URL_FALLBACK  optional backup endpoint
 // Examples:
 //   Local dev (web/iOS sim):    http://127.0.0.1:8000/api
 //   Android emulator:           http://10.0.2.2:8000/api
 //   Physical device (Expo Go):  http://192.168.x.x:8000/api
 //   Production:                 https://yourdomain.com/api
-const resolveBaseUrl = () => {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+const resolveEndpoints = () => {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host === 'localhost' || host === '127.0.0.1') {
-      return `http://${host}:8000/api`;
+      return [`http://${host}:8000/api`];
     }
   }
-  return envUrl || (Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api');
+
+  const primary = process.env.EXPO_PUBLIC_API_URL?.trim();
+  const fallback = process.env.EXPO_PUBLIC_API_URL_FALLBACK?.trim();
+  const localhost = Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api';
+
+  return [primary || localhost, fallback].filter(Boolean);
 };
 
-export const API_BASE_URL = resolveBaseUrl();
+const ENDPOINTS = [...new Set(resolveEndpoints())];
+
+// Index of the endpoint that last answered, so the failover probe runs once per
+// session instead of on every request.
+let activeEndpoint = 0;
+
+const endpointUrl = (index) => ENDPOINTS[index] ?? ENDPOINTS[0];
+
+/** The endpoint currently in use — the last one known to be reachable. */
+export const getApiBaseUrl = () => endpointUrl(activeEndpoint);
+
+/** Every configured endpoint, in the order the client tries them. */
+export const getConfiguredEndpoints = () => [...ENDPOINTS];
+
+/** True once the client has failed over to a backup endpoint. */
+export const isUsingFallbackEndpoint = () => activeEndpoint > 0;
 
 export const AUTH_SESSION_MINUTES = Number.parseInt(
   process.env.EXPO_PUBLIC_AUTH_SESSION_MINUTES ?? '120',
@@ -35,7 +56,7 @@ const TOKEN_META_KEY = 'user_token_meta';
 
 
 const API = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -143,6 +164,8 @@ export const setStoredToken = async (token, { expiresAt } = {}) => {
 
 // Interceptor: Automatically attach Bearer token to all outgoing requests
 API.interceptors.request.use(async (config) => {
+  config.baseURL = endpointUrl(config._endpointIndex ?? activeEndpoint);
+
   const token = await getStoredToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -153,8 +176,32 @@ API.interceptors.request.use(async (config) => {
 });
 
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Remember the endpoint that answered so later calls go straight to it.
+    const index = response.config?._endpointIndex;
+    if (typeof index === 'number') {
+      activeEndpoint = index;
+    }
+    return response;
+  },
   async (error) => {
+    const config = error?.config;
+    const triedIndex = config?._endpointIndex ?? activeEndpoint;
+
+    if (error?.response) {
+      // A 4xx/5xx is still a real answer from a reachable server — remember it so
+      // later calls skip the probe. Rejected responses land here, not in the
+      // success handler above.
+      activeEndpoint = triedIndex;
+    } else if (triedIndex + 1 < ENDPOINTS.length) {
+      // No `response` means the request never reached a server: a timeout, a DNS
+      // failure or a dead VPN tunnel. Only that case is worth retrying on another
+      // endpoint — a 4xx/5xx is a real answer from an API we can already reach.
+      const nextIndex = triedIndex + 1;
+      console.warn(`[api] ${endpointUrl(triedIndex)} unreachable - retrying via ${endpointUrl(nextIndex)}`);
+      return API.request({ ...config, _endpointIndex: nextIndex });
+    }
+
     if (error?.response?.status === 401) {
       await clearStoredSession();
     }

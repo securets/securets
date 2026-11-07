@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
   View, Text, Image, StyleSheet, TouchableOpacity,
-  TextInput, ActivityIndicator, Alert, Platform, Modal,
+  TextInput, ActivityIndicator, Platform, Modal,
   KeyboardAvoidingView, ScrollView,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import API, { API_BASE_URL, AUTH_SESSION_LABEL, setStoredToken } from '../src/api/client';
+import API, { getConfiguredEndpoints, AUTH_SESSION_LABEL, setStoredToken } from '../src/api/client';
 import { useTheme } from '../src/theme/ThemeContext';
 
 const LOGO_ASSET = require('./new-securets-logo-dark.png');
@@ -70,7 +70,7 @@ export default function LoginModal({ visible, onClose, onLoginSuccess }) {
         msg = `Sign-in failed (HTTP ${status}). Please try again.`;
       } else {
         // No response at all: the request never reached the API.
-        msg = `Cannot reach SecureTS at ${API_BASE_URL}. Check your connection and API URL.`;
+        msg = `Cannot reach SecureTS (tried ${getConfiguredEndpoints().join(' and ')}). Check your connection or VPN.`;
       }
 
       setError(msg);
@@ -120,7 +120,7 @@ export default function LoginModal({ visible, onClose, onLoginSuccess }) {
               focusedField === 'email' && styles.inputFocused,
             ]}
             placeholder="you@example.com"
-            placeholderTextColor="#64748B"
+            placeholderTextColor={C.muted}
             value={email}
             onChangeText={setEmail}
             onFocus={() => setFocusedField('email')}
@@ -144,7 +144,7 @@ export default function LoginModal({ visible, onClose, onLoginSuccess }) {
             <TextInput
               style={styles.pwInput}
               placeholder="••••••••"
-              placeholderTextColor="#64748B"
+              placeholderTextColor={C.muted}
               value={password}
               onChangeText={setPassword}
               onFocus={() => setFocusedField('password')}
@@ -163,7 +163,7 @@ export default function LoginModal({ visible, onClose, onLoginSuccess }) {
               <Feather
                 name={showPw ? 'eye-off' : 'eye'}
                 size={18}
-                color={showPw ? '#00BBFF' : '#94A3B8'}
+                color={showPw ? C.blueLight : C.muted}
               />
             </TouchableOpacity>
           </View>
@@ -195,26 +195,26 @@ export default function LoginModal({ visible, onClose, onLoginSuccess }) {
   );
 }
 
-const createStyles = () => StyleSheet.create({
+const createStyles = (C) => StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(14, 19, 38, 0.78)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#1C2236',
+    backgroundColor: C.card,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 24,
     paddingBottom: 40,
     borderTopWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: C.border,
   },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    backgroundColor: C.border,
     alignSelf: 'center',
     marginBottom: 20,
   },
@@ -227,20 +227,20 @@ const createStyles = () => StyleSheet.create({
     height: 42,
   },
   title: {
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 18,
     fontWeight: '700',
     marginTop: 12,
     letterSpacing: -0.3,
   },
   subtitle: {
-    color: '#94A3B8',
+    color: C.muted,
     fontSize: 12,
     marginTop: 4,
   },
 
   errorText: {
-    color: '#F87171',
+    color: C.danger,
     fontSize: 12,
     textAlign: 'center',
     marginBottom: 12,
@@ -252,7 +252,7 @@ const createStyles = () => StyleSheet.create({
   },
 
   label: {
-    color: '#94A3B8',
+    color: C.muted,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.8,
@@ -260,32 +260,32 @@ const createStyles = () => StyleSheet.create({
     marginTop: 14,
   },
   input: {
-    backgroundColor: '#0E1326',
+    backgroundColor: C.inputBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: C.border,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 14,
     marginBottom: 0,
   },
   inputFocused: {
-    borderColor: '#00BBFF',
+    borderColor: C.blueLight,
   },
   pwWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0E1326',
+    backgroundColor: C.inputBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: C.border,
     borderRadius: 8,
   },
   pwInput: {
     flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: '#F8FAFC',
+    color: C.text,
     fontSize: 14,
   },
   eyeBtn: {
@@ -296,7 +296,7 @@ const createStyles = () => StyleSheet.create({
   },
 
   btn: {
-    backgroundColor: '#4063D7',
+    backgroundColor: C.blue,
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
@@ -310,7 +310,7 @@ const createStyles = () => StyleSheet.create({
     letterSpacing: 0.2,
   },
   sessionNote: {
-    color: '#64748B',
+    color: C.muted,
     fontSize: 11,
     textAlign: 'center',
     lineHeight: 16,
@@ -318,5 +318,5 @@ const createStyles = () => StyleSheet.create({
   },
 
   cancelBtn: { alignItems: 'center', marginTop: 12, padding: 8 },
-  cancelText: { color: '#94A3B8', fontSize: 13, fontWeight: '500' },
+  cancelText: { color: C.muted, fontSize: 13, fontWeight: '500' },
 });

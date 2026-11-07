@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -92,5 +93,27 @@ class User extends Authenticatable
     public function devices(): HasMany
     {
         return $this->hasMany(Device::class);
+    }
+
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(\App\Models\Subscription::class);
+    }
+
+    /**
+     * The current plan slug. Defaults to 'free' if no subscription exists.
+     */
+    public function currentPlan(): string
+    {
+        return $this->subscription?->plan ?? 'free';
+    }
+
+    /**
+     * Maximum number of integrations for the user's current plan.
+     * Returns null for unlimited plans.
+     */
+    public function planLimit(): int|null
+    {
+        return config('stripe.limits.' . $this->currentPlan());
     }
 }

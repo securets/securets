@@ -4,23 +4,28 @@
   "private": true,
   "scripts": {
     "ip": "node scripts/detect-lan-ip.js",
+    "ip:tailscale": "node scripts/detect-lan-ip.js --tailscale",
     "start": "npm run ip && cross-env NODE_OPTIONS='--max-old-space-size=4096' expo start",
+    "start:tailscale": "npm run ip:tailscale && cross-env NODE_OPTIONS='--max-old-space-size=4096' expo start -c",
     "android": "npm run ip && cross-env NODE_OPTIONS='--max-old-space-size=4096' expo start --android",
     "ios": "npm run ip && cross-env NODE_OPTIONS='--max-old-space-size=4096' expo start --ios",
     "web": "npm run ip && cross-env NODE_OPTIONS='--max-old-space-size=4096' expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "12.0.1",
     "axios": "^1.7.9",
-    "expo": "^53.0.11",
-    "expo-notifications": "~58.1.8",
+    "expo": "~58.0.23",
+    "expo-constants": "~58.0.13",
+    "expo-font": "~58.0.11",
+    "expo-notifications": "~58.1.6",
     "expo-secure-store": "~58.0.2",
+    "expo-web-browser": "~58.0.7",
     "pusher-js": "^8.6.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.1",
-    "react-native-svg": "15.16.0",
     "react-native-web": "~0.21.4"
   },
   "devDependencies": {

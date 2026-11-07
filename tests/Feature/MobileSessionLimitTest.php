@@ -43,5 +43,5 @@ test('web login page shows the standard sign-in window', function () {
 
     $this->get(route('login'))
         ->assertOk()
-        ->assertSee('120 minutes after the browser closes.');
+        ->assertSee('stays signed in for up to 120 minutes after the', false);
 });

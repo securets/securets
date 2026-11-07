@@ -19,10 +19,6 @@ export const integrationApi = {
     // Get current TOTP code
     totp: (id) => API.get(`/integrations/${id}/totp`),
 
-    // Report a login event from external app
-    loginEvent: (integrationId, data) =>
-        API.post(`/integrations/${integrationId}/login-event`, data),
-
     // Approve or decline a login event
     respond: (eventId, decision) =>
         API.patch(`/login-events/${eventId}/respond`, { decision }),

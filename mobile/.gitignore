@@ -10,5 +10,6 @@ npm-debug.*
 *.orig.*
 web-build/
 
-# Local env — NEVER commit this
+# Local env — NEVER commit these
 .env
+.env*.local
