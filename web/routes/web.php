@@ -78,6 +78,3 @@ Route::middleware('auth')->group(function () {
 // ── Mobile return pages (public — the in-app browser has no web session) ──────
 Route::get('/subscription/mobile-success', [SubscriptionController::class, 'mobileSuccess'])->name('subscription.mobile-success');
 Route::get('/subscription/mobile-cancel', [SubscriptionController::class, 'mobileCancel'])->name('subscription.mobile-cancel');
-
-// ── Admin Web Routes (folder: routes/admin/) ──────────────────────────────────
-require __DIR__.'/admin/admin.php';
