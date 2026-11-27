@@ -202,12 +202,17 @@ class PostgresGrammar extends Grammar
         return [
             'simple',
             'arabic',
+            'armenian',
+            'basque',
+            'catalan',
             'danish',
             'dutch',
             'english',
             'finnish',
             'french',
             'german',
+            'greek',
+            'hindi',
             'hungarian',
             'indonesian',
             'irish',
@@ -218,11 +223,34 @@ class PostgresGrammar extends Grammar
             'portuguese',
             'romanian',
             'russian',
+            'serbian',
             'spanish',
             'swedish',
             'tamil',
             'turkish',
+            'yiddish',
         ];
+    }
+
+    /**
+     * Compile a vector distance expression for the given column.
+     *
+     * @param  string  $column
+     * @return string
+     */
+    public function compileVectorDistanceExpression($column)
+    {
+        return "({$this->wrap($column)} <=> ?)";
+    }
+
+    /**
+     * Determine if the grammar supports vector distance queries.
+     *
+     * @return bool
+     */
+    public function supportsVectorDistance()
+    {
+        return true;
     }
 
     /**

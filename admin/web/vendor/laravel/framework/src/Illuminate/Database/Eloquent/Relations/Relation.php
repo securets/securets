@@ -439,6 +439,16 @@ abstract class Relation implements BuilderContract
     }
 
     /**
+     * Get the class name of the related model.
+     *
+     * @return class-string<TRelatedModel>
+     */
+    public function getRelatedClass()
+    {
+        return $this->related::class;
+    }
+
+    /**
      * Get the name of the "created at" column.
      *
      * @return string
@@ -597,6 +607,16 @@ abstract class Relation implements BuilderContract
     public static function getMorphAlias(string $className)
     {
         return array_search($className, static::$morphMap, strict: true) ?: $className;
+    }
+
+    /**
+     * Clone the relationship.
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        return clone $this;
     }
 
     /**

@@ -613,6 +613,17 @@ class Handler implements ExceptionHandlerContract
      * @param  \Throwable  $e
      * @return array
      */
+    public function contextForException(Throwable $e)
+    {
+        return $this->buildExceptionContext($e);
+    }
+
+    /**
+     * Create the context array for logging the given exception.
+     *
+     * @param  \Throwable  $e
+     * @return array
+     */
     protected function buildExceptionContext(Throwable $e)
     {
         return array_merge(
@@ -882,9 +893,11 @@ class Handler implements ExceptionHandlerContract
      */
     protected function invalid($request, ValidationException $exception)
     {
+        $errorBag = $request->input('_error_bag');
+
         return redirect($exception->redirectTo ?? url()->previous())
             ->withInput(Arr::except($request->input(), $this->dontFlash))
-            ->withErrors($exception->errors(), $request->input('_error_bag', $exception->errorBag));
+            ->withErrors($exception->errors(), is_string($errorBag) ? $errorBag : $exception->errorBag);
     }
 
     /**

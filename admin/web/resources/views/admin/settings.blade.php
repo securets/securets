@@ -41,7 +41,6 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                <span class="nav-badge-count">2</span>
             </a>
 
             <!-- Settings (Active) -->
@@ -119,11 +118,10 @@
                             <div class="settings-label-title">Emergency Bypass Code Validity</div>
                             <div class="settings-label-desc">Time window before a generated recovery code expires if not redeemed by the locked-out user.</div>
                         </div>
-                        <select style="background: #0d1527; border: 1px solid var(--border-color); color: #ffffff; padding: 8px 14px; border-radius: 8px; font-size: 13px; outline: none;">
-                            <option value="15">15 Minutes</option>
-                            <option value="30">30 Minutes</option>
-                            <option value="60" selected>60 Minutes (Recommended)</option>
-                            <option value="1440">24 Hours</option>
+                        <select name="code_ttl_minutes" style="background: #0d1527; border: 1px solid var(--border-color); color: #ffffff; padding: 8px 14px; border-radius: 8px; font-size: 13px; outline: none;">
+                            @foreach (['15' => '15 Minutes', '30' => '30 Minutes', '60' => '60 Minutes (Recommended)', '1440' => '24 Hours'] as $minutes => $label)
+                                <option value="{{ $minutes }}" @selected($settings['admin.recovery.code_ttl_minutes'] === (string) $minutes)>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -134,7 +132,7 @@
                             <div class="settings-label-desc">Requires manager sign-off or government ID verification before an emergency bypass code can be issued.</div>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="require_identity_verification" value="1" @checked($settings['admin.recovery.require_identity_verification'] === '1')>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -146,7 +144,7 @@
                             <div class="settings-label-desc">Forces the user to immediately pair a new smartphone authenticator upon logging in with the emergency code.</div>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="force_reenrollment" value="1" @checked($settings['admin.recovery.force_reenrollment'] === '1')>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -176,7 +174,7 @@
                             <div class="settings-label-desc">Immediately invalidates Laravel Sanctum session tokens and unbinds Expo mobile push tokens when a device is flagged lost.</div>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="revoke_tokens" value="1" @checked($settings['admin.lockdown.revoke_tokens'] === '1')>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -188,7 +186,7 @@
                             <div class="settings-label-desc">Permanently prevents the reported lost phone or laptop hardware ID from communicating with ThreatShield APIs.</div>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="blacklist_hardware" value="1" @checked($settings['admin.lockdown.blacklist_hardware'] === '1')>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -212,13 +210,13 @@
 
                     <div style="margin-bottom: 18px;">
                         <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Primary Admin Security Email</label>
-                        <input type="email" value="security-ops@threatshield.internal" 
+                        <input type="email" name="alerts_email" value="{{ $settings['admin.alerts.email'] }}" placeholder="security@yourcompany.com" 
                                style="width: 100%; padding: 10px 14px; background: #0c1426; border: 1px solid var(--border-color); border-radius: 8px; color: #ffffff; font-size: 14px; outline: none;">
                     </div>
 
                     <div>
                         <label style="display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Urgent SMS / Webhook Endpoint (Optional)</label>
-                        <input type="url" placeholder="https://api.threatshield.internal/webhooks/emergency-lockout" 
+                        <input type="url" name="alerts_webhook_url" value="{{ $settings['admin.alerts.webhook_url'] }}" placeholder="https://example.com/webhooks/emergency-lockout" 
                                style="width: 100%; padding: 10px 14px; background: #0c1426; border: 1px solid var(--border-color); border-radius: 8px; color: #ffffff; font-size: 14px; outline: none;">
                     </div>
                 </div>

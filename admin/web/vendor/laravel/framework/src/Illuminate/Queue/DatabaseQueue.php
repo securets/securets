@@ -5,6 +5,7 @@ namespace Illuminate\Queue;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Database\Connection;
+use Illuminate\Database\DetectsConcurrencyErrors;
 use Illuminate\Queue\Attributes\Delay;
 use Illuminate\Queue\Jobs\DatabaseJob;
 use Illuminate\Queue\Jobs\DatabaseJobRecord;
@@ -20,6 +21,8 @@ use function Illuminate\Support\enum_value;
 
 class DatabaseQueue extends Queue implements QueueContract, ClearableQueue
 {
+    use DetectsConcurrencyErrors;
+
     /**
      * The database connection instance.
      *
@@ -131,6 +134,54 @@ class DatabaseQueue extends Queue implements QueueContract, ClearableQueue
     {
         return $this->database->table($this->table)
             ->where('queue', $this->getQueue($queue))
+            ->whereNotNull('reserved_at')
+            ->count();
+    }
+
+    /**
+     * Get the number of jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalSize()
+    {
+        return $this->database->table($this->table)->count();
+    }
+
+    /**
+     * Get the number of pending jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalPendingSize()
+    {
+        return $this->database->table($this->table)
+            ->whereNull('reserved_at')
+            ->where('available_at', '<=', $this->currentTime())
+            ->count();
+    }
+
+    /**
+     * Get the number of delayed jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalDelayedSize()
+    {
+        return $this->database->table($this->table)
+            ->whereNull('reserved_at')
+            ->where('available_at', '>', $this->currentTime())
+            ->count();
+    }
+
+    /**
+     * Get the number of reserved jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalReservedSize()
+    {
+        return $this->database->table($this->table)
             ->whereNotNull('reserved_at')
             ->count();
     }
@@ -432,7 +483,7 @@ class DatabaseQueue extends Queue implements QueueContract, ClearableQueue
             });
         } catch (Throwable $e) {
             // Potentially invalid job that we need to fail (#58978)...
-            if ($jobRecord) {
+            if ($jobRecord && ! $this->causedByConcurrencyError($e)) {
                 try {
                     (new DatabaseJob(
                         $this->container, $this, $jobRecord, $this->connectionName, $queue
@@ -625,7 +676,7 @@ class DatabaseQueue extends Queue implements QueueContract, ClearableQueue
      */
     public function getQueue($queue)
     {
-        return enum_value($queue) ?: $this->default;
+        return $this->resolveQueue(enum_value($queue) ?: $this->default);
     }
 
     /**

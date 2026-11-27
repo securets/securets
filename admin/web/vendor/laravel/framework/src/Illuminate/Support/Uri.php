@@ -167,6 +167,18 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
     }
 
     /**
+     * Get the URI's origin.
+     *
+     * Opaque origins, such as those of relative or "mailto:" URIs, are returned as null.
+     */
+    public function origin(): ?string
+    {
+        $uri = $this->uri instanceof LeagueUri ? $this->uri : LeagueUri::new($this->value());
+
+        return $uri->getOrigin();
+    }
+
+    /**
      * Get the URI's path.
      *
      * Empty or missing paths are returned as a single "/".
@@ -263,7 +275,7 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
             $mergedQuery = $this->query()->all();
 
             foreach ($query as $key => $value) {
-                data_set($mergedQuery, $key, $value);
+                Arr::set($mergedQuery, $key, $value);
             }
 
             $newQuery = $mergedQuery;
@@ -271,7 +283,7 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
             $newQuery = [];
 
             foreach ($query as $key => $value) {
-                data_set($newQuery, $key, $value);
+                Arr::set($newQuery, $key, $value);
             }
         }
 

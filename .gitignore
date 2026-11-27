@@ -1,3 +1,20 @@
+<<<<<<< HEAD
+/.phpunit.cache
+/node_modules
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+web/vendor/
+web/node_modules/
+mobile/vendor/
+admin/web/vendor/
+admin/web/node_modules/
+admin/mobile/node_modules/
+=======
 # Laravel application (web/)
 /web/vendor
 /web/node_modules
@@ -17,6 +34,7 @@
 /mobile/.expo
 
 # Local environment files
+>>>>>>> 0cc6ca1b23e469a532601390fc6a1637021919e2
 .env
 .env.backup
 .env.production

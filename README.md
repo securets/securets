@@ -2,7 +2,7 @@
 
 ![SecureTS Platform](src/gif/landing%20page%20view.gif)
 
-A high-speed, monorepo-based security command center and active session management platform protecting Target Apps with MFA, biometric gates, and emergency lockdown.
+A high-speed, monorepo-based security command center and active session management platform protecting Target Apps with MFA, biometric gates, and device security controls.
 
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Passing-22c55e?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/tests.yml)
 [![Vercel](https://img.shields.io/badge/Vercel-Deployment-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
@@ -29,7 +29,7 @@ A high-speed, monorepo-based security command center and active session manageme
 ![Mobile Layout](src/gif/Full%20mobile%20layout%20%28buggy%29.gif) 
 
 - **Push Login Approvals:** Instant, interactive approve/deny prompts dispatched via high-throughput Laravel Reverb WebSockets and Expo Push Notifications (target p95 latency < 2s).
-- **Emergency "Swipe-to-Lockdown" Kill Switch:** Rapid one-action gesture that immediately invalidates all active sessions, revokes access tokens, and freezes connected Target App authorizations.
+- **Device Security Controls:** Remote device locking, token revocation, and account recovery workflows for compromised or lost devices.
 - **Biometric Admin Gates:** Local FaceID / TouchID / biometric authentication guarding high-security operations, token rotations, and sensitive approval confirmations.
 - **TOTP Fallback:** Built-in RFC 6238 time-based one-time password generator (30-second rotating codes with visual countdown indicator) guaranteeing uninterrupted offline authentication. 
 

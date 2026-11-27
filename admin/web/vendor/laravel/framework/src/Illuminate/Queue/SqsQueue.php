@@ -172,6 +172,46 @@ class SqsQueue extends Queue implements QueueContract, ClearableQueue
     }
 
     /**
+     * Get the number of jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalSize()
+    {
+        return 0;
+    }
+
+    /**
+     * Get the number of pending jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalPendingSize()
+    {
+        return 0;
+    }
+
+    /**
+     * Get the number of delayed jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalDelayedSize()
+    {
+        return 0;
+    }
+
+    /**
+     * Get the number of reserved jobs across every queue.
+     *
+     * @return int
+     */
+    public function totalReservedSize()
+    {
+        return 0;
+    }
+
+    /**
      * Get the pending jobs for the given queue.
      *
      * @param  \UnitEnum|string|null  $queue
@@ -320,6 +360,8 @@ class SqsQueue extends Queue implements QueueContract, ClearableQueue
      */
     public function bulk($jobs, $data = '', $queue = null)
     {
+        $queue = enum_value($queue);
+
         $jobs = array_values((array) $jobs);
 
         if (empty($jobs)) {
@@ -539,7 +581,7 @@ class SqsQueue extends Queue implements QueueContract, ClearableQueue
     public function getQueueableOptions($job, $queue, $payload, $delay = null): array
     {
         // Make sure we have a queue name to properly determine if it's a FIFO queue...
-        $queue = enum_value($queue) ?? $this->default;
+        $queue = $this->resolveQueue(enum_value($queue) ?? $this->default);
 
         $isObject = is_object($job);
         $isFifo = str_ends_with((string) $queue, '.fifo');
@@ -565,7 +607,9 @@ class SqsQueue extends Queue implements QueueContract, ClearableQueue
 
         if ($isObject) {
             $messageGroupId = transform($job->messageGroup ?? (method_exists($job, 'messageGroup') ? $job->messageGroup() : null), $transformToString);
-        } elseif ($isFifo) {
+        }
+
+        if ($isFifo && is_null($messageGroupId)) {
             $messageGroupId = transform($queue, $transformToString);
         }
 
@@ -644,7 +688,7 @@ class SqsQueue extends Queue implements QueueContract, ClearableQueue
      */
     public function getQueue($queue)
     {
-        $queue = enum_value($queue) ?: $this->default;
+        $queue = $this->resolveQueue(enum_value($queue) ?: $this->default);
 
         return filter_var($queue, FILTER_VALIDATE_URL) === false
             ? $this->suffixQueue($queue, $this->suffix)

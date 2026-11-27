@@ -177,10 +177,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Mark all as read
+    // Mark all as read (persisted in system_controls)
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     const btnMarkRead = document.getElementById('btn-mark-all-read');
     if (btnMarkRead) {
-        btnMarkRead.addEventListener('click', () => {
+        btnMarkRead.addEventListener('click', async () => {
+            const response = await fetch('/admin/notifications/read', {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
+            });
+            if (!response.ok) {
+                showToast('Could not mark notifications as read.', 'error');
+                return;
+            }
             notifItems.forEach(item => {
                 item.classList.remove('unread', 'urgent');
             });
@@ -190,12 +199,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Settings Save Form ──
+    // ── Settings Save Form (persisted in system_controls) ──
     const settingsForm = document.getElementById('admin-settings-form');
     if (settingsForm) {
-        settingsForm.addEventListener('submit', (e) => {
+        settingsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            showToast('Account recovery and device lockdown policies updated successfully!', 'success');
+            const payload = Object.fromEntries(new FormData(settingsForm));
+            settingsForm.querySelectorAll('input[type="checkbox"][name]').forEach(box => {
+                payload[box.name] = box.checked;
+            });
+            const response = await fetch('/admin/settings/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify(payload),
+            });
+            const result = await response.json().catch(() => ({}));
+            showToast(result.message ?? 'Settings could not be saved.', response.ok ? 'success' : 'error');
         });
     }
 });

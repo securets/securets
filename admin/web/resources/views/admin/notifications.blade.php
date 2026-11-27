@@ -41,7 +41,7 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                <span class="nav-badge-count">2</span>
+                @if ($unreadCount > 0)<span class="nav-badge-count">{{ $unreadCount }}</span>@endif
             </a>
 
             <!-- Settings -->
@@ -98,10 +98,10 @@
             <!-- Header with Filter Tabs & Actions -->
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
                 <div class="notifications-tabs" style="margin-bottom: 0; border-bottom: none;">
-                    <button type="button" class="notif-tab-btn active" data-filter="all">All Alerts (5)</button>
-                    <button type="button" class="notif-tab-btn" data-filter="lost-device">Lost Devices (2)</button>
-                    <button type="button" class="notif-tab-btn" data-filter="recovery">Recovery Tickets (2)</button>
-                    <button type="button" class="notif-tab-btn" data-filter="security">Security Events (1)</button>
+                    <button type="button" class="notif-tab-btn active" data-filter="all">All Alerts ({{ count($notifications) }})</button>
+                    <button type="button" class="notif-tab-btn" data-filter="lost-device">Lost Devices ({{ $categoryCounts['lost-device'] ?? 0 }})</button>
+                    <button type="button" class="notif-tab-btn" data-filter="recovery">Admin Actions ({{ $categoryCounts['recovery'] ?? 0 }})</button>
+                    <button type="button" class="notif-tab-btn" data-filter="security">Login Events ({{ $categoryCounts['security'] ?? 0 }})</button>
                 </div>
 
                 <button type="button" class="btn-secondary-action" id="btn-mark-all-read">
@@ -114,7 +114,7 @@
 
             <!-- Notifications Stack -->
             <div class="notifications-stack">
-                @foreach($notifications as $notif)
+                @forelse($notifications as $notif)
                     <div class="notification-item {{ $notif['unread'] ? 'unread' : '' }} {{ $notif['urgent'] ? 'urgent' : '' }}" 
                          data-category="{{ $notif['category'] }}">
                         <div class="notif-icon-box" style="background: {{ $notif['urgent'] ? 'rgba(239, 68, 68, 0.15)' : 'rgba(37, 99, 235, 0.15)' }}; color: {{ $notif['urgent'] ? '#f87171' : '#60a5fa' }};">
@@ -159,7 +159,9 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <p class="notif-message">No security notifications recorded yet.</p>
+                @endforelse
             </div>
         </div>
     </main>
